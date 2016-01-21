@@ -331,6 +331,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                                             isBehaviour2Enabled:0, ¬
                                             keychainPolicy:keychainPolicy, ¬
                                             changePasswordPromptWindowTitle:changePasswordPromptWindowTitle, ¬
+                                            changePasswordPromptWindowText:changePasswordPromptWindowText, ¬
                                             pwPolicyURLButtonTitle:pwPolicyURLButtonTitle, ¬
                                             pwPolicyURLButtonURL:pwPolicyURLButtonURL, ¬
                                             pwPolicyURLButtonBrowser:pwPolicyURLButtonBrowser, ¬
@@ -363,6 +364,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         tell defaults to set my isBehaviour2Enabled to objectForKey_("isBehaviour2Enabled") as integer
         tell defaults to set my keychainPolicy to objectForKey_("keychainPolicy") as string
         tell defaults to set my changePasswordPromptWindowTitle to objectForKey_("changePasswordPromptWindowTitle")
+        tell defaults to set my changePasswordPromptWindowText to objectForKey_("changePasswordPromptWindowText")
         tell defaults to set my pwPolicyURLButtonTitle to objectForKey_("pwPolicyURLButtonTitle")
         tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL")
         tell defaults to set my pwPolicyURLButtonBrowser to objectForKey_("pwPolicyURLButtonBrowser") as string
@@ -1461,6 +1463,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         tell defaults to removeObjectForKey_("isBehaviour2Enabled")
         tell defaults to removeObjectForKey_("keychainPolicy")
         tell defaults to removeObjectForKey_("changePasswordPromptWindowTitle")
+        tell defaults to removeObjectForKey_("changePasswordPromptWindowText")
         tell defaults to removeObjectForKey_("pwPolicyURLButtonTitle")
         tell defaults to removeObjectForKey_("pwPolicyURLButtonURL")
         tell defaults to removeObjectForKey_("pwPolicyURLButtonBrowser")
