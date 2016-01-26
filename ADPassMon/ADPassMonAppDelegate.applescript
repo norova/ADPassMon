@@ -1242,6 +1242,13 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                 -- Display password policy dialog with custom button
                 tell application "System Events" to display dialog pwPolicy with icon 2 buttons {pwPolicyButton}
             end if
+			-- Set variable to boolean
+            set allowPasswordChange to allowPasswordChange as boolean
+            -- If password change is  not allowed, then proceed
+            if allowPasswordChange is false
+                -- If password change is disabled, then don't proceed.
+                set pwPolicyUpdateExternal to true
+            end if
         -- If both pwPolicyURLButtonTitle or pwPolicyURLButtonURL are set, then display second button
         else if pwPolicyURLButtonTitle is not equal to "" and pwPolicyURLButtonURL is not equal to ""
             -- Display password policy dialog
