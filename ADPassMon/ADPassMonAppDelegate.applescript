@@ -1243,6 +1243,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL") as string
         tell defaults to set my pwPolicyURLButtonBrowser to objectForKey_("pwPolicyURLButtonBrowser") as string
         tell defaults to set my pwpolicyButton to objectForKey_("pwPolicyButton") as string
+        -- Reset pwPolicyUpdateExternal so it's state isn't remembered accross multiple policy display calls
         set pwPolicyUpdateExternal to false
         -- If either pwPolicyURLButtonTitle or pwPolicyURLButtonURL is not set, then display standard pwPolicy prompt
         if pwPolicyURLButtonTitle is "" or pwPolicyURLButtonURL is ""
@@ -1266,6 +1267,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         else if pwPolicyURLButtonTitle is not equal to "" and pwPolicyURLButtonURL is not equal to ""
             -- Display password policy dialog
             set allowPasswordChange to allowPasswordChange as boolean
+            -- Change button text to better reflect behaviour when allowPasswordChange is set to false
             if  allowPasswordChange is true
                 tell application "System Events" to display dialog pwPolicy with icon 2 buttons {"OK", pwPolicyURLButtonTitle}
             else
