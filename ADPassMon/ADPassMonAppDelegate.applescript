@@ -451,6 +451,9 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             my statusMenu's itemWithTitle_("Refresh Kerberos Ticket")'s setEnabled_(1)
             -- Set variable to boolean
             set allowPasswordChange to allowPasswordChange as boolean
+            tell defaults to set my pwPolicyURLButtonTitle to objectForKey_("pwPolicyURLButtonTitle") as string
+            tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL") as string
+            
             -- If password change is allowed, show
             if allowPasswordChange is true
                 my statusMenu's itemWithTitle_("Change Password…")'s setEnabled_(1)
@@ -498,6 +501,8 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             my statusMenu's itemWithTitle_("Refresh Kerberos Ticket")'s setEnabled_(1)
             -- Set variable to boolean
             set allowPasswordChange to allowPasswordChange as boolean
+            tell defaults to set my pwPolicyURLButtonTitle to objectForKey_("pwPolicyURLButtonTitle") as string
+            tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL") as string
             -- If password change is allowed, show
             if allowPasswordChange is true
                 my statusMenu's itemWithTitle_("Change Password…")'s setEnabled_(1)
@@ -911,22 +916,25 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                 pwPolicyDisplay_(me)
             end if
             -- Open System Preferences
-            tell application "System Preferences"
-                try -- to use UI scripting
-                    set current pane to pane id "com.apple.preferences.users"
-                    activate
-                    delay 1
-                    tell application "System Events"
-                        tell application process "System Preferences"
-                            click radio button "Password" of tab group 1 of window "Users & Groups"
-                            click button "Change Password…" of tab group 1 of window "Users & Groups"
-                            click button "Change Password…" of window 1
+            set allowPasswordChange to allowPasswordChange as boolean
+            if allowPasswordChange is true
+                tell application "System Preferences"
+                    try -- to use UI scripting
+                        set current pane to pane id "com.apple.preferences.users"
+                        activate
+                        delay 1
+                        tell application "System Events"
+                            tell application process "System Preferences"
+                                click radio button "Password" of tab group 1 of window "Users & Groups"
+                                click button "Change Password…" of tab group 1 of window "Users & Groups"
+                                click button "Change Password…" of window 1
+                            end tell
                         end tell
-                    end tell
-                on error theError
-                    errorOut_(theError, 1)
-                end try
-            end tell
+                        on error theError
+                        errorOut_(theError, 1)
+                    end try
+                end tell
+            end if
         else
             -- If Behaviour 2 is enabled, then use the different password change mechanism
             -- Close the Prefs window if open
@@ -937,11 +945,15 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                 pwPolicyDisplay_(me)
             end if
             -- If user did not chose to update externally or was not prompted, then continue
-            if pwPolicyUpdateExternal is false
-                -- Set passwordPromptWindows settings
-                set my enablePasswordPromptWindowButton2 to false
-                set my passwordPromptWindowText to changePasswordPromptWindowText
-                showPasswordPromptWindow_(me)
+            set allowPasswordChange to allowPasswordChange as boolean
+            set pwPolicyUpdateExternal to pwPolicyUpdateExternal as boolean
+            if allowPasswordChange is true
+                if pwPolicyUpdateExternal is false
+                    -- Set passwordPromptWindows settings
+                    set my enablePasswordPromptWindowButton2 to false
+                    set my passwordPromptWindowText to changePasswordPromptWindowText
+                    showPasswordPromptWindow_(me)
+                end if
             end if
         end if
     end changePassword_
@@ -1231,6 +1243,8 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL") as string
         tell defaults to set my pwPolicyURLButtonBrowser to objectForKey_("pwPolicyURLButtonBrowser") as string
         tell defaults to set my pwpolicyButton to objectForKey_("pwPolicyButton") as string
+        -- Reset pwPolicyUpdateExternal so it's state isn't remembered accross multiple policy display calls
+        set pwPolicyUpdateExternal to false
         -- If either pwPolicyURLButtonTitle or pwPolicyURLButtonURL is not set, then display standard pwPolicy prompt
         if pwPolicyURLButtonTitle is "" or pwPolicyURLButtonURL is ""
             -- If pwPolicyButton is not set
@@ -1242,10 +1256,23 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                 -- Display password policy dialog with custom button
                 tell application "System Events" to display dialog pwPolicy with icon 2 buttons {pwPolicyButton}
             end if
+			-- Set variable to boolean
+            set allowPasswordChange to allowPasswordChange as boolean
+            -- If password change is  not allowed, then proceed
+            if allowPasswordChange is false
+                -- If password change is disabled, then don't proceed.
+                set pwPolicyUpdateExternal to true
+            end if
         -- If both pwPolicyURLButtonTitle or pwPolicyURLButtonURL are set, then display second button
         else if pwPolicyURLButtonTitle is not equal to "" and pwPolicyURLButtonURL is not equal to ""
             -- Display password policy dialog
-            tell application "System Events" to display dialog pwPolicy with icon 2 buttons {"OK", pwPolicyURLButtonTitle}
+            set allowPasswordChange to allowPasswordChange as boolean
+            -- Change button text to better reflect behaviour when allowPasswordChange is set to false
+            if  allowPasswordChange is true
+                tell application "System Events" to display dialog pwPolicy with icon 2 buttons {"OK", pwPolicyURLButtonTitle}
+            else
+                tell application "System Events" to display dialog pwPolicy with icon 2 buttons {"Cancel", pwPolicyURLButtonTitle}
+            end if
             -- If pwPolicyURLButtonTitle...
             if button returned of the result is pwPolicyURLButtonTitle
                 -- If pwPolicyURLButton is not set, then open pwPolicyURLButtonURL in the default browser
