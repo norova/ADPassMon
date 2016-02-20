@@ -81,7 +81,6 @@ If you do not know your keychain password, enter your new password in the New an
 
 --- Booleans
     property first_run :                true
-    property isLocalAccount :           false
     property runIfLocal :               false
     property isIdle :                   true
     property isHidden :                 false
@@ -108,6 +107,7 @@ If you do not know your keychain password, enter your new password in the New an
     property passwordCheckPassed :      false
     
 --- Other Properties
+    property accountStatus :            ""
     property warningDays :              14
     property menu_title :               "[ ? ]"
     property accTest :                  1
@@ -155,17 +155,48 @@ If you do not know your keychain password, enter your new password in the New an
         log "Running on OS 10." & osVersion & ".x"
     end getOS_
     
-    -- Check if running in a local account
-    on localAccountCheck_(sender)
-        set accountLoc to (do shell script "dscl localhost read /Search/Users/$USER AuthenticationAuthority") as string
-        if "Active Directory" is in accountLoc or "NetLogon" is in accountLoc or "LocalCachedUser" is in accountLoc then
-            set my isLocalAccount to false
-            log "Running under a network account."
+    -- Check the status of the current account
+    on localAccountStatus_(sender)
+        try
+            set isInLocalDS to (do shell script "dscl . read /Users/$USER AuthenticationAuthority") as string
+        on error
+            set isInLocalDS to "nope"
+        end try
+        
+        try
+            set isInSearchPath to (do shell script "dscl /Search read /Users/$USER AuthenticationAuthority") as string
+        on error
+            set isInSearchPath to "nope"
+        end try
+        
+        if isInLocalDS is "nope"
+            if isInSearchPath is "nope" then
+                set my accountStatus to "Error"
+                log "Something went wrong, can't find the current user in any directory service."
+            else if "Active Directory" is in isInSearchPath or "NetLogon" is in isInSearchPath or "LocalCachedUser" is in isInSearchPath then
+                set my accountStatus to "Network"
+                log "Running under a network account."
+            else
+                set my accountStatus to "Error"
+                log "Something went wrong, found the current user in the network directory path but the schema doesn't match."
+            end if
         else
-            set my isLocalAccount to true
-            log "Running under a local account."
+            if isInSearchPath is "nope" then
+                set my accountStatus to "Local"
+                log "Running under a local account."
+            else if "Active Directory" is in isInLocalDS or "NetLogon" is in isInLocalDS or "LocalCachedUser" is in isInLocalDS then
+                set my accountStatus to "Cached"
+                log "Running under a locally cached network account."
+            else if "Active Directory" is in isInSearchPath or "NetLogon" is in isInSearchPath or "LocalCachedUser" is in isInSearchPath then
+                set my accountStatus to "Matched"
+                log "Running under a local account with a matching AD account."
+            else
+                set my accountStatus to "Error"
+                log "Something went wrong, found the current user in the search path but the schema doesn't match."
+            end if
         end if
-    end localAccountCheck_
+    end localAccountStatus_
+
     
     -- Check & log the selected Behaviour
     on doSelectedBehaviourCheck_(sender)
@@ -1617,17 +1648,20 @@ Please choose your configuration options."
         getOS_(me)
         regDefaults_(me) -- populate plist file with defaults (will not overwrite non-default settings))
         retrieveDefaults_(me) -- load defaults (from plist)
-        localAccountCheck_(me)
-        if my isLocalAccount is false
+        localAccountStatus_(me)
+        if my accountStatus is "Network" or accountStatus is "Cached" then
             startMeUp_(me)
-        else if my isLocalAccount is true and my runIfLocal is true
-            startMeUp_(me)
+        else if my accountStatus is "Matched" and my runIfLocal is true then
             log "  Proceeding due to manual override."
+            startMeUp_(me)
+        else if my accountStatus is "Matched" and my runIfLocal is false then
+            log "  Manual override not enabled."
+            log "  Stopping."
         else
             log "  Stopping."
         end if
     end applicationWillFinishLaunching_
-    
+
     on applicationShouldTerminate_(sender)
         return current application's NSTerminateNow
     end applicationShouldTerminate_
