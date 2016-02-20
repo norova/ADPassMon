@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ADPassMon/ADPassMonAppDelegate.applescript"
-            timestampString = "470045108.077109"
+            timestampString = "477696825.052883"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1568"
-            endingLineNumber = "1568"
-            landmarkName = "on startMeUp_(sender)"
+            startingLineNumber = "1571"
+            endingLineNumber = "1571"
+            landmarkName = "on createMenu_(sender)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

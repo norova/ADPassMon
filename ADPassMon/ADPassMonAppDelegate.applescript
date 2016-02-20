@@ -1084,7 +1084,6 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         -- If changing password, change keychain pass too.
         if passwordPromptWindowButton1 is equal to "Change"
             updatePassword_(me)
-            updateKeychainPassword_(me)
         else
             set userPasswordChanged to true
             updateKeychainPassword_(me)
@@ -1100,6 +1099,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             set userPasswordChanged to true
             -- Set Keychain settings to make sure they are unlocked
             setKeychainSettings_(me)
+            updateKeychainPassword_(me)
         on error errStr
             -- Errors if not connected to org's network
             if errStr contains "eDSServiceUnavailable"
@@ -1341,6 +1341,9 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
 
     -- Open Password Prompt window
     on showPasswordPromptWindow_(sender)
+        set oldPassword's stringValue to "" as string
+        set NewPassword's stringValue to "" as string
+        set VerifyPassword's stringValue to "" as string
         activate
         passwordPromptWindow's makeKeyAndOrderFront_(me)
         set passwordPromptWindow's level to 3
