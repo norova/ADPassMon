@@ -850,12 +850,15 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         end try
     end compareDates_
 
-    -- Get the full date of password expiration. daysUntilExp is input.
+    -- Get the full date of password expiration. daysUntilExp is input. Used by alt method, updates plist.
     on getExpirationDate_(remaining)
         set fullDate to (current date) + (remaining * days) as text
         --set my expirationDate to text 1 thru ((offset of ":" in fullDate) - 3) of fullDate -- this truncates the time
         set my expirationDate to fullDate
         log "  expirationDate: " & expirationDate
+        set my expireDateUnix to do shell script "date -j -f \"%A, %d %b %Y %H:%M:%S\" " & quoted form of expirationDate & " +%s"
+        log "  expireDateUnix: " & expireDateUnix
+        tell defaults to setObject_forKey_(expireDateUnix, "expireDateUnix")
     end getExpirationDate_
 
     -- Updates the menu's title and tooltip
