@@ -852,13 +852,37 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
 
     -- Get the full date of password expiration. daysUntilExp is input. Used by alt method, updates plist.
     on getExpirationDate_(remaining)
-        set fullDate to (current date) + (remaining * days) as text
-        --set my expirationDate to text 1 thru ((offset of ":" in fullDate) - 3) of fullDate -- this truncates the time
-        set my expirationDate to fullDate
-        log "  expirationDate: " & expirationDate
-        set my expireDateUnix to do shell script "date -j -f \"%A, %d %b %Y %H:%M:%S\" " & quoted form of expirationDate & " +%s"
+        set todayUnix to do shell script "/bin/date +%s"
+        set fullDate to (todayUnix) + (remaining * 86400) as string
+        -- From http://www.macosxautomation.com/applescript/sbrt/sbrt-02.html
+        if fullDate contains "E+" then
+            set x to the offset of "." in fullDate
+            set y to the offset of "+" in fullDate
+            set z to the offset of "E" in fullDate
+            set the decimal_adjust to characters (y - (length of fullDate)) thru -1 of fullDate as string as number
+            if x is not 0 then
+                set the first_part to characters 1 thru (x - 1) of fullDate as string
+            else
+                set the first_part to ""
+            end if
+            set the second_part to characters (x + 1) thru (z - 1) of fullDate as string
+            set the converted_number to the first_part
+            repeat with i from 1 to the decimal_adjust
+                try
+                    set the converted_number to ¬
+                    the converted_number & character i of the second_part
+                on error
+                    set the converted_number to the converted_number & "0"
+                end try
+            end repeat
+            set my expireDateUnix to converted_number
+        else
+            set my expireDateUnix to fullDate
+        end if
         log "  expireDateUnix: " & expireDateUnix
         tell defaults to setObject_forKey_(expireDateUnix, "expireDateUnix")
+        set my expirationDate to (current date) + (remaining * days) as text
+        log "  expirationDate: " & expirationDate
     end getExpirationDate_
 
     -- Updates the menu's title and tooltip
