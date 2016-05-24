@@ -12,10 +12,10 @@
 --  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 --  copies of the Software, and to permit persons to whom the Software is
 --  furnished to do so, subject to the following conditions:
---  
+--
 --  The above copyright notice and this permission notice shall be included in
 --  all copies or substantial portions of the Software.
---  
+--
 --  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 --  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 --  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +27,7 @@
 
 script ADPassMonAppDelegate
 
---- PROPERTIES ---    
+--- PROPERTIES ---
 
 --- Classes
     property parent :                   class "NSObject"
@@ -58,9 +58,9 @@ script ADPassMonAppDelegate
     property changePasswordPromptWindowTitle : "Change Password"
     property changePasswordPromptWindowButton1 : "Change"
     property changePasswordPromptWindowText : "Please complete all the fields below.
-    
+
 You must be connected to your organization's network to update your password.
-    
+
 Your login keychain will also be updated."
     property oldPassword : missing value
     property newPassword : missing value
@@ -74,7 +74,7 @@ Your login keychain will also be updated."
     property unlockKeychainPasswordWindowTitle : "Your Keychain is locked!"
     property unlockKeychainPasswordWindowButton1 : "Update"
     property unlockKeychainPasswordWindowText : "If you know the last password you used to login to the Mac, please complete all the fields below and click Update.
-    
+
 If you do not know your keychain password, enter your new password in the New and Verify fields, then click 'Create New Keychain'."
     property pwPolicyTest : missing value
     property pwPolicyString : missing value
@@ -105,7 +105,7 @@ If you do not know your keychain password, enter your new password in the New an
     property enablePasswordPolicy :     false
     property keychainPolicyEnabled :    false
     property passwordCheckPassed :      false
-    
+
 --- Other Properties
     property accountStatus :            ""
     property warningDays :              14
@@ -154,7 +154,7 @@ If you do not know your keychain password, enter your new password in the New an
         set my osVersion to (do shell script "sw_vers -productVersion | awk -F. '{print $2}'") as integer
         log "Running on OS 10." & osVersion & ".x"
     end getOS_
-    
+
     -- Check the status of the current account
     on localAccountStatus_(sender)
         try
@@ -162,13 +162,13 @@ If you do not know your keychain password, enter your new password in the New an
         on error
             set isInLocalDS to "nope"
         end try
-        
+
         try
             set isInSearchPath to (do shell script "dscl /Search read /Users/$USER AuthenticationAuthority") as string
         on error
             set isInSearchPath to "nope"
         end try
-        
+
         if isInLocalDS is "nope"
             if isInSearchPath is "nope" then
                 set my accountStatus to "Error"
@@ -197,7 +197,7 @@ If you do not know your keychain password, enter your new password in the New an
         end if
     end localAccountStatus_
 
-    
+
     -- Check & log the selected Behaviour
     on doSelectedBehaviourCheck_(sender)
         if selectedBehaviour is 1
@@ -231,7 +231,7 @@ If you do not know your keychain password, enter your new password in the New an
                 if accTest as integer is 1
                     if "80" is in (do shell script "/usr/bin/id -G") -- checks if user is in admin group
                         set accessDialog to (display dialog "ADPassMon's \"Change Password\" feature requires assistive access to open the password panel.
-                        
+
     Enable it now? (requires password)" with icon 2 buttons {"No","Yes"} default button 2)
                         if button returned of accessDialog is "Yes"
                             log "  Prompting for password"
@@ -276,7 +276,7 @@ If you do not know your keychain password, enter your new password in the New an
         if "80" is in (do shell script "/usr/bin/id -G") -- checks if user is in admin group
             activate
             set response to (display dialog "ADPassMon's \"Change Password\" feature requires assistive access to open the password panel.
-            
+
 Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             if button returned of response is "Yes"
                 log "  Prompting for password"
@@ -298,7 +298,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             log "  Skipping because user not an admin"
         end if
     end accEnable_
-    
+
     -- Check if Checking keychain lock is enabled
     on doKeychainLockCheck_(sender)
         tell defaults to set my enableKeychainLockCheck to objectForKey_("enableKeychainLockCheck") as integer
@@ -321,7 +321,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             log "Skipping Keychain Lock state check..."
         end if
     end doKeychainLockCheck_
-    
+
     -- Check to see if KerbMinder installed
     on KerbMinderTest_(sender)
         tell application "Finder"
@@ -411,12 +411,12 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             current application's NSUserNotificationCenter's defaultUserNotificationCenter's setDelegate_(me)
         end if
     end notifySetup_
-    
+
     -- notifications should always be displayed (can be overridden in system Notification prefs)
     on userNotificationCenter_shouldPresentNotification_(aCenter, aNotification)
         return yes
     end userNotificationCenter_shouldPresentNotification_
-    
+
     -- handler for notification click events
     on userNotificationCenter_didActivateNotification_(aCenter, aNotification)
         set userActivationType to (aNotification's activationType) as integer
@@ -463,12 +463,12 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
     on ticketViewer_(sender)
         tell application "Ticket Viewer" to activate
     end ticketViewer_
-    
+
     -- Test to see if we're on the domain
     on domainTest_(sender)
         set domain to (do shell script "/usr/sbin/dsconfigad -show | /usr/bin/awk '/Active Directory Domain/{print $NF}'") as text
         try
-            set digResult to (do shell script "/usr/bin/dig +time=2 +tries=1 -t srv _ldap._tcp." & domain) as text
+            set digResult to (do shell script "/usr/bin/dig +all +time=2 +tries=1 -t srv _ldap._tcp." & domain) as text
         on error theError
             log "Domain test timed out."
             set my onDomain to false
@@ -484,7 +484,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             set allowPasswordChange to allowPasswordChange as boolean
             tell defaults to set my pwPolicyURLButtonTitle to objectForKey_("pwPolicyURLButtonTitle") as string
             tell defaults to set my pwPolicyURLButtonURL to objectForKey_("pwPolicyURLButtonURL") as string
-            
+
             -- If password change is allowed, show
             if allowPasswordChange is true
                 my statusMenu's itemWithTitle_("Change Password…")'s setEnabled_(1)
@@ -505,10 +505,10 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
 
         -- Grab domain name from bind information
         set domain to (do shell script "/usr/sbin/dsconfigad -show | /usr/bin/awk '/Active Directory Domain/{print $NF}'") as text
-        
+
         -- Test domain connectivity
         try
-            set digResult to (do shell script "/usr/bin/dig +time=2 +tries=1 -t srv _ldap._tcp." & domain) as text
+            set digResult to (do shell script "/usr/bin/dig +all +time=2 +tries=1 -t srv _ldap._tcp." & domain) as text
         on error theError
             log "Domain test timed out."
             set my onDomain to false
@@ -516,10 +516,10 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             my statusMenu's itemWithTitle_("Change Password…")'s setEnabled_(0)
             return
         end try
-        
+
         -- For UI update
         delay 0.1
-        
+
         -- If the get an answer from the above dig command
         if "ANSWER SECTION" is in digResult
             if my onDomain is false
@@ -691,7 +691,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         try
             set myDomain to (do shell script "/usr/sbin/dsconfigad -show | /usr/bin/awk '/Active Directory Domain/{print $NF}'") as text
             try
-                set myLDAPresult to (do shell script "/usr/bin/dig +time=2 +tries=1 -t srv _ldap._tcp." & myDomain) as text
+                set myLDAPresult to (do shell script "/usr/bin/dig +all +time=2 +tries=1 -t srv _ldap._tcp." & myDomain) as text
             on error theError
                 log "Domain test timed out."
                 set my onDomain to false
@@ -699,7 +699,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             if "ANSWER SECTION" is in myLDAPresult
                 set my onDomain to true
                 -- using "first paragraph" to return only the first ldap server returned by the query
-                set myLDAP to last paragraph of (do shell script "/usr/bin/dig -t srv _ldap._tcp." & myDomain & "| /usr/bin/awk '/^_ldap/{print $NF}'") as text
+                set myLDAP to last paragraph of (do shell script "/usr/bin/dig +all -t srv _ldap._tcp." & myDomain & "| /usr/bin/awk '/^_ldap/{print $NF}'") as text
                 log "  myDomain: " & myDomain
                 log "  myADLDAP: " & myLDAP
             else
@@ -749,7 +749,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         fmt's setMaximumSignificantDigits_(7)
         fmt's setMinimumSignificantDigits_(1)
         fmt's setDecimalSeparator_(".")
-        
+
         set my pwdSetDateUnix to (do shell script "/usr/bin/dscl localhost read /Search/Users/\"$USER\" SMBPasswordLastSet | /usr/bin/awk '/LastSet:/{print $2}'")
         if (count words of pwdSetDateUnix) is greater than 0
             set my pwdSetDateUnix to last word of pwdSetDateUnix
@@ -805,7 +805,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             errorOut_(theError, 1)
         end try
     end easyMethod_
-    
+
     on easyDate_(timestamp)
         set my expirationDate to do shell script "/bin/date -r" & timestamp
         set todayUnix to do shell script "/bin/date +%s"
@@ -892,7 +892,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         statusMenuController's updateDisplay()
     end updateMenuTitle_
 
-    -- The meat of the app; gets the data and does the calculations 
+    -- The meat of the app; gets the data and does the calculations
     on doProcess_(sender)
         domainTest_(me)
         if selectedMethod = 0
@@ -900,13 +900,13 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         else
             log "Starting manual process…"
         end if
-        
+
         try
             if my onDomain is true
                 theWindow's displayIfNeeded()
                 set my isIdle to false
                 set my theMessage to "Working…"
-            
+
                 -- Do this if we haven't run before, or the defaults have been reset.
                 if my expireDateUnix = 0 and my selectedMethod = 0
                     getADLDAP_(me)
@@ -929,7 +929,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
                     compareDates_(me)
                     getExpirationDate_(daysUntilExp)
                 end if
-                
+
                 updateMenuTitle_((daysUntilExpNice as string) & "d", "Your password expires\n" & expirationDate)
                 set my theMessage to "Your password expires in " & daysUntilExpNice & " days\non " & expirationDate
                 set my isIdle to true
@@ -946,7 +946,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
         -- Check for Keychain Lock
         doKeychainLockCheck_(me)
     end doProcess_
-    
+
     on doProcessWithWait_(sender)
         tell current application's NSThread to sleepForTimeInterval_(15)
         doProcess_(me)
@@ -1483,7 +1483,7 @@ Enable it now?" with icon 2 buttons {"No","Yes"} default button 2)
             log "Enabled notifications."
         end if
     end toggleNotify_
-    
+
     on toggleKerbMinder_(sender)
         if my enableKerbMinder as boolean is true
             set my enableKerbMinder to false
@@ -1565,12 +1565,12 @@ Please choose your configuration options."
     end revertDefaults_
 
 --- INITIAL LOADING SECTION ---
-    
+
     -- Creates the status menu and its items, using some values determined by other handlers
     on createMenu_(sender)
         set statusMenu to (my NSMenu's alloc)'s initWithTitle_("statusMenu")
         statusMenu's setAutoenablesItems_(false)
-        
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("About ADPassMon…")
         menuItem's setTarget_(me)
@@ -1587,7 +1587,7 @@ Please choose your configuration options."
         menuItem's setState_(enableNotifications as integer)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Use KerbMinder")
         menuItem's setTarget_(me)
@@ -1597,7 +1597,7 @@ Please choose your configuration options."
         menuItem's setState_(enableKerbMinder as integer)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Preferences…")
         menuItem's setTarget_(me)
@@ -1605,9 +1605,9 @@ Please choose your configuration options."
         menuItem's setEnabled_(not prefsLocked)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         statusMenu's addItem_(my NSMenuItem's separatorItem)
-		
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Refresh Kerberos Ticket")
         menuItem's setTarget_(me)
@@ -1615,7 +1615,7 @@ Please choose your configuration options."
         menuItem's setEnabled_(onDomain as boolean)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Launch Ticket Viewer")
         menuItem's setTarget_(me)
@@ -1623,7 +1623,7 @@ Please choose your configuration options."
         menuItem's setEnabled_(true)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Re-check Expiration")
         menuItem's setTarget_(me)
@@ -1639,9 +1639,9 @@ Please choose your configuration options."
         menuItem's setEnabled_(onDomain as boolean)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         statusMenu's addItem_(my NSMenuItem's separatorItem)
-		
+
         set menuItem to (my NSMenuItem's alloc)'s init
         menuItem's setTitle_("Exit")
         menuItem's setTarget_(me)
@@ -1649,7 +1649,7 @@ Please choose your configuration options."
         menuItem's setEnabled_(true)
         statusMenu's addItem_(menuItem)
         menuItem's release()
-        
+
         -- Instantiate the statusItemController object and set it to use the statusMenu we just created
         set statusMenuController to (current application's class "StatusMenuController"'s alloc)'s init
         statusMenuController's createStatusItemWithMenu_(statusMenu)
